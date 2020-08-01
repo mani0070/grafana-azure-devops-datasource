@@ -28,7 +28,7 @@ jobs:
         yarn test;
       name: Test
     - run: |
-        yarn build;
+        yarn dev;
         echo $(date) > dist/LAST_UPDATED;
         cp CHANGELOG.md dist/CHANGELOG.md;
       name: Build
