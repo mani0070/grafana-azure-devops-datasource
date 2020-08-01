@@ -1,0 +1,42 @@
+name: Build & Publish
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - run: |
+        yarn install --frozen-lockfile;
+      name: Install Dependencies
+    - run: |
+        yarn test;
+      name: Test
+    - run: |
+        yarn build;
+        echo $(date) > dist/LAST_UPDATED;
+        cp CHANGELOG.md dist/CHANGELOG.md;
+      name: Build
+    - run: |
+        git config --global user.email "actions@github.com";
+        git config --global user.name "Github Actions";
+        git add --force dist/
+        git commit -m "Build by Github Actions"
+        git push
+        git status
+      name: Publish
