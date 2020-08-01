@@ -1,0 +1,48 @@
+{
+  "name": "Azure Devops",
+  "id": "yesoreyeram-azuredevops-datasource",
+  "type": "datasource",
+  "category": "cloud",
+  "metrics": true,
+  "info": {
+    "version": "0.0.1",
+    "updated": "2020-08-01",
+    "description": "Grafana Azure Devops DataSource",
+    "author": {
+      "name": "Sriramajeyam Sugumaran",
+      "url": "https://www.google.com/search?q=Sriramajeyam+Sugumaran"
+    },
+    "logos": {
+      "small": "img/yesoreyeram-azure-devops-datasource-logo.jpg",
+      "large": "img/yesoreyeram-azure-devops-datasource-logo.jpg"
+    },
+    "keywords": [
+      "azure",
+      "devops",
+      "azure devops"
+    ],
+    "links": [
+      {
+        "name": "Github",
+        "url": "https://github.com/yesoreyeram/grafana-azure-devops-datasource"
+      }
+    ]
+  },
+  "dependencies": {
+    "grafanaVersion": "5.2.x",
+    "plugins": []
+  },
+  "routes": [
+    {
+      "path": "azuredevops",
+      "method": "*",
+      "url": "{{ .JsonData.azureDevopsURL }}",
+      "headers": [
+        {
+          "name": "Accept",
+          "content": "application/json"
+        }
+      ]
+    }
+  ]
+}
