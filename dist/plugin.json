@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "grafanaVersion": "5.2.x",
+    "grafanaDependency": ">=5.0.0",
     "plugins": []
   },
   "routes": [
