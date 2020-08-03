@@ -1,4 +1,4 @@
-define(["@grafana/data","lodash","react"], function(__WEBPACK_EXTERNAL_MODULE__grafana_data__, __WEBPACK_EXTERNAL_MODULE_lodash__, __WEBPACK_EXTERNAL_MODULE_react__) { return /******/ (function(modules) { // webpackBootstrap
+define(["@grafana/data","@grafana/runtime","@grafana/ui","lodash","react"], function(__WEBPACK_EXTERNAL_MODULE__grafana_data__, __WEBPACK_EXTERNAL_MODULE__grafana_runtime__, __WEBPACK_EXTERNAL_MODULE__grafana_ui__, __WEBPACK_EXTERNAL_MODULE_lodash__, __WEBPACK_EXTERNAL_MODULE_react__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -340,10 +340,871 @@ function __classPrivateFieldSet(receiver, privateMap, value) {
 
 /***/ }),
 
-/***/ "./AzureDevopsAnnotationsEditor.tsx":
-/*!******************************************!*\
-  !*** ./AzureDevopsAnnotationsEditor.tsx ***!
-  \******************************************/
+/***/ "./AzureDevopsConnection.ts":
+/*!**********************************!*\
+  !*** ./AzureDevopsConnection.ts ***!
+  \**********************************/
+/*! exports provided: AzureDevopsProject, AzureDevopsPipeline, AzureDevopsTeam, AzureBacklogItem, AzureDevopsConnection */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsProject", function() { return AzureDevopsProject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsPipeline", function() { return AzureDevopsPipeline; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsTeam", function() { return AzureDevopsTeam; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureBacklogItem", function() { return AzureBacklogItem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsConnection", function() { return AzureDevopsConnection; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @grafana/runtime */ "@grafana/runtime");
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_grafana_runtime__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var AzureDevopsProject =
+/** @class */
+function () {
+  function AzureDevopsProject(options) {
+    this.id = options.id || '';
+    this.name = options.name || '';
+    this.description = options.description || '';
+  }
+
+  AzureDevopsProject.prototype.asSelectable = function () {
+    return {
+      value: this.id,
+      label: this.name
+    };
+  };
+
+  return AzureDevopsProject;
+}();
+
+
+
+var AzureDevopsPipeline =
+/** @class */
+function () {
+  function AzureDevopsPipeline(options) {
+    this.id = options.id || '';
+    this.name = options.name || '';
+    this.description = options.description || '';
+  }
+
+  AzureDevopsPipeline.prototype.asSelectable = function () {
+    return {
+      value: this.id,
+      label: this.name
+    };
+  };
+
+  return AzureDevopsPipeline;
+}();
+
+
+
+var AzureDevopsTeam =
+/** @class */
+function () {
+  function AzureDevopsTeam(options) {
+    this.id = options.id || '';
+    this.name = options.name || '';
+    this.description = options.description || '';
+  }
+
+  AzureDevopsTeam.prototype.asSelectable = function () {
+    return {
+      value: this.id,
+      label: this.name
+    };
+  };
+
+  return AzureDevopsTeam;
+}();
+
+
+
+var AzureBacklogItem =
+/** @class */
+function () {
+  function AzureBacklogItem(options) {
+    this.id = options.id || '';
+    this.name = options.name || '';
+    this.description = options.description || '';
+  }
+
+  AzureBacklogItem.prototype.asSelectable = function () {
+    return {
+      value: this.id,
+      label: this.name
+    };
+  };
+
+  return AzureBacklogItem;
+}();
+
+
+
+var doBackendRequest = function doBackendRequest(requestObject, maxRetries) {
+  if (maxRetries === void 0) {
+    maxRetries = 1;
+  }
+
+  return Object(_grafana_runtime__WEBPACK_IMPORTED_MODULE_1__["getBackendSrv"])().datasourceRequest(requestObject)["catch"](function (error) {
+    if (maxRetries > 0) {
+      return doBackendRequest(requestObject, maxRetries - 1);
+    } else {
+      console.error("Error while retrieving data from " + requestObject.url, error);
+      return {};
+    }
+  });
+};
+
+var AzureDevopsConnection =
+/** @class */
+function () {
+  function AzureDevopsConnection(instanceSettings) {
+    this.instanceSettings = instanceSettings;
+    this.projects = [];
+    this.url = this.instanceSettings.url;
+  }
+
+  AzureDevopsConnection.prototype.getProjects = function () {
+    var _this = this;
+
+    if (this.projects.length > 0) {
+      return new Promise(function (resolve) {
+        resolve(_this.projects);
+      });
+    } else {
+      return doBackendRequest({
+        method: 'GET',
+        url: this.url + "/_apis/projects?api-version=6.0-preview.4"
+      }, 2).then(function (response) {
+        if (response && response.data && response.data.value) {
+          _this.projects = (response.data.value || []).map(function (result) {
+            return new AzureDevopsProject(result);
+          });
+        }
+
+        return _this.projects;
+      })["catch"](function (ex) {
+        console.error(ex);
+        return _this.projects;
+      });
+    }
+  };
+
+  AzureDevopsConnection.prototype.getPipelines = function (projectId) {
+    var _this = this;
+
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/" + projectId + "/_apis/pipelines?api-version=6.0-preview.1")
+    }, 2).then(function (response) {
+      if (response && response.data && response.data.value) {
+        _this.projects = (response.data.value || []).map(function (result) {
+          return new AzureDevopsPipeline(result);
+        });
+      }
+
+      return _this.projects;
+    })["catch"](function (ex) {
+      console.error(ex);
+      return _this.projects;
+    });
+  };
+
+  AzureDevopsConnection.prototype.getPipelineRuns = function (projectId, pipelineId) {
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/" + projectId + "/_apis/pipelines/" + pipelineId + "/runs?api-version=6.0-preview.1")
+    }, 2).then(function (response) {
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return result;
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  AzureDevopsConnection.prototype.getReleaseDeployments = function (projectId) {
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/" + projectId + "/_apis/release/deployments?api-version=6.0-preview.2")
+    }, 2).then(function (response) {
+      console.log(response);
+
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return result;
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  AzureDevopsConnection.prototype.getBuildBuilds = function (projectId) {
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/" + projectId + "/_apis/build/builds?api-version=6.0-preview.6")
+    }, 2).then(function (response) {
+      console.log(response);
+
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return result;
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  AzureDevopsConnection.prototype.getTeamsByProject = function (projectId) {
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/_apis/projects/" + projectId + "/teams?api-version=6.0-preview.3")
+    }, 2).then(function (response) {
+      console.log(response);
+
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return new AzureDevopsTeam(result);
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  AzureDevopsConnection.prototype.getBacklogsByTeam = function (projectId, teamId) {
+    return doBackendRequest({
+      method: 'GET',
+      url: this.url + ("/" + projectId + "/" + teamId + "/_apis/work/backlogs?api-version=6.0-preview.1")
+    }, 2).then(function (response) {
+      console.log(response);
+
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return new AzureBacklogItem(result);
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  AzureDevopsConnection.prototype.testConnection = function () {
+    var _this = this;
+
+    return new Promise(function (resolve, reject) {
+      return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+          this.getProjects().then(function (res) {
+            resolve({
+              message: "Successfully Connected to Azure Devops. " + res.length + " projects found.",
+              status: 'success'
+            });
+          })["catch"](function (ex) {
+            reject({
+              message: 'Failed to fetch details from Azure Devops',
+              status: 'error'
+            });
+          });
+          return [2
+          /*return*/
+          ];
+        });
+      });
+    });
+  };
+
+  return AzureDevopsConnection;
+}();
+
+
+
+/***/ }),
+
+/***/ "./AzureDevopsDatasource.ts":
+/*!**********************************!*\
+  !*** ./AzureDevopsDatasource.ts ***!
+  \**********************************/
+/*! exports provided: AzureDevopsDataSource */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsDataSource", function() { return AzureDevopsDataSource; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AzureDevopsConnection */ "./AzureDevopsConnection.ts");
+
+
+
+var AzureDevopsDataSource =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsDataSource, _super);
+
+  function AzureDevopsDataSource(instanceSettings) {
+    return _super.call(this, instanceSettings) || this;
+  }
+
+  AzureDevopsDataSource.prototype.query = function (options) {
+    var _this = this;
+
+    var queries = options.targets.filter(function (item) {
+      return item.hide !== true;
+    });
+    var promises = [];
+    queries.filter(function (q) {
+      return q.queryType === 'pipelines_runs';
+    }).forEach(function (q) {
+      promises.push(_this.getPipelineRuns(q.projectId, q.pipelineId));
+    });
+    queries.filter(function (q) {
+      return q.queryType === 'release_deployments';
+    }).forEach(function (q) {
+      promises.push(_this.getReleaseDeployments(q.projectId));
+    });
+    queries.filter(function (q) {
+      return q.queryType === 'build_builds';
+    }).forEach(function (q) {
+      promises.push(_this.getBuildBuilds(q.projectId));
+    });
+    queries.filter(function (q) {
+      return q.queryType === 'teams';
+    }).forEach(function (q) {
+      promises.push(_this.getTeamsByProject(q.projectId));
+    });
+    queries.filter(function (q) {
+      return q.queryType === 'teams_backlogs';
+    }).forEach(function (q) {
+      promises.push(_this.getBacklogsByTeam(q.projectId, q.teamId));
+    });
+    return Promise.all(promises).then(function (results) {
+      return results;
+    });
+  };
+
+  return AzureDevopsDataSource;
+}(_AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_1__["AzureDevopsConnection"]);
+
+
+
+/***/ }),
+
+/***/ "./ctrl/AzureDevopsPipeline.tsx":
+/*!**************************************!*\
+  !*** ./ctrl/AzureDevopsPipeline.tsx ***!
+  \**************************************/
+/*! exports provided: AzureDevopsPipelineCtrl */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsPipelineCtrl", function() { return AzureDevopsPipelineCtrl; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../AzureDevopsConnection */ "./AzureDevopsConnection.ts");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+var AzureDevopsPipelineCtrl =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsPipelineCtrl, _super);
+
+  function AzureDevopsPipelineCtrl() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.state = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["defaults"])(_this.state, {
+      projectId: '',
+      AzureDevopsPipelines: []
+    });
+
+    _this.loadPipelines = function () {
+      return new Promise(function (resolve) {
+        var az = new _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsConnection"](_this.props.datasource.instanceSettings);
+        az.getPipelines(_this.props.query.projectId || '').then(function (res) {
+          _this.setState({
+            AzureDevopsPipelines: res.map(function (r) {
+              return r.asSelectable();
+            })
+          });
+
+          resolve();
+        });
+      });
+    };
+
+    _this.componentDidUpdate = function (prevProps) {
+      if (_this.props.query.projectId !== prevProps.query.projectId) {
+        var _a = _this.props,
+            query = _a.query,
+            onChange = _a.onChange;
+
+        _this.loadPipelines();
+
+        onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+          pipelineId: '',
+          pipelineName: ''
+        }));
+      }
+    };
+
+    _this.onPipelineIdChange = function (event) {
+      var _a = _this.props,
+          query = _a.query,
+          onChange = _a.onChange;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        pipelineId: event.value,
+        pipelineName: event.label
+      }));
+    };
+
+    return _this;
+  }
+
+  AzureDevopsPipelineCtrl.prototype.getPipelines = function () {
+    return this.state.AzureDevopsPipelines;
+  };
+
+  AzureDevopsPipelineCtrl.prototype.componentWillMount = function () {
+    this.state.projectId = this.props.query.projectId || '';
+    this.loadPipelines();
+  };
+
+  AzureDevopsPipelineCtrl.prototype.render = function () {
+    var query = this.props.query;
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form gf-form--grow"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+      className: "gf-form-label width-12",
+      title: "Projects"
+    }, "Pipeline"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__["Select"], {
+      className: "width-24",
+      options: this.state.AzureDevopsPipelines,
+      onChange: this.onPipelineIdChange,
+      defaultValue: query.pipelineId,
+      value: this.state.AzureDevopsPipelines.find(function (proj) {
+        return proj.value === query.pipelineId;
+      }) || {
+        label: query.pipelineId,
+        value: query.pipelineName
+      },
+      allowCustomValue: true
+    })))));
+  };
+
+  return AzureDevopsPipelineCtrl;
+}(react__WEBPACK_IMPORTED_MODULE_2__["PureComponent"]);
+
+
+
+/***/ }),
+
+/***/ "./ctrl/AzureDevopsProject.tsx":
+/*!*************************************!*\
+  !*** ./ctrl/AzureDevopsProject.tsx ***!
+  \*************************************/
+/*! exports provided: AzureDevopsProjectCtrl */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsProjectCtrl", function() { return AzureDevopsProjectCtrl; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../AzureDevopsConnection */ "./AzureDevopsConnection.ts");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+var AzureDevopsProjectCtrl =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsProjectCtrl, _super);
+
+  function AzureDevopsProjectCtrl() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.state = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["defaults"])(_this.state, {
+      AzureDevopsProjects: []
+    });
+
+    _this.onProjectIdChange = function (event) {
+      var _a = _this.props,
+          query = _a.query,
+          onChange = _a.onChange;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        projectId: event.value,
+        projectName: event.label
+      }));
+    };
+
+    return _this;
+  }
+
+  AzureDevopsProjectCtrl.prototype.componentWillMount = function () {
+    var _this = this;
+
+    var az = new _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsConnection"](this.props.datasource.instanceSettings);
+    az.getProjects().then(function (res) {
+      _this.setState({
+        AzureDevopsProjects: res.map(function (r) {
+          return r.asSelectable();
+        })
+      });
+    });
+  };
+
+  AzureDevopsProjectCtrl.prototype.render = function () {
+    var query = this.props.query;
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form gf-form--grow"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+      className: "gf-form-label width-12",
+      title: "Projects"
+    }, "Projects"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__["Select"], {
+      className: "width-24",
+      options: this.state.AzureDevopsProjects,
+      onChange: this.onProjectIdChange,
+      defaultValue: query.projectId,
+      value: this.state.AzureDevopsProjects.find(function (proj) {
+        return proj.value === query.projectId;
+      }) || {
+        label: query.projectId,
+        value: query.projectName
+      },
+      allowCustomValue: true
+    })))));
+  };
+
+  return AzureDevopsProjectCtrl;
+}(react__WEBPACK_IMPORTED_MODULE_2__["PureComponent"]);
+
+
+
+/***/ }),
+
+/***/ "./ctrl/AzureDevopsTeams.tsx":
+/*!***********************************!*\
+  !*** ./ctrl/AzureDevopsTeams.tsx ***!
+  \***********************************/
+/*! exports provided: AzureDevopsTeamsCtrl */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsTeamsCtrl", function() { return AzureDevopsTeamsCtrl; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../AzureDevopsConnection */ "./AzureDevopsConnection.ts");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+var AzureDevopsTeamsCtrl =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsTeamsCtrl, _super);
+
+  function AzureDevopsTeamsCtrl() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.state = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["defaults"])(_this.state, {
+      projectId: '',
+      Teams: []
+    });
+
+    _this.loadTeams = function () {
+      return new Promise(function (resolve) {
+        var az = new _AzureDevopsConnection__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsConnection"](_this.props.datasource.instanceSettings);
+        az.getTeamsByProject(_this.props.query.projectId || '').then(function (res) {
+          _this.setState({
+            Teams: res.map(function (r) {
+              return r.asSelectable();
+            })
+          });
+
+          resolve();
+        });
+      });
+    };
+
+    _this.componentDidUpdate = function (prevProps) {
+      if (_this.props.query.projectId !== prevProps.query.projectId) {
+        var _a = _this.props,
+            query = _a.query,
+            onChange = _a.onChange;
+
+        _this.loadTeams();
+
+        onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+          teamId: '',
+          teamName: ''
+        }));
+      }
+    };
+
+    _this.onTeamIdChange = function (event) {
+      var _a = _this.props,
+          query = _a.query,
+          onChange = _a.onChange;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        teamId: event.value,
+        teamName: event.label
+      }));
+    };
+
+    return _this;
+  }
+
+  AzureDevopsTeamsCtrl.prototype.getPipelines = function () {
+    return this.state.Teams;
+  };
+
+  AzureDevopsTeamsCtrl.prototype.componentWillMount = function () {
+    this.state.projectId = this.props.query.projectId || '';
+    this.loadTeams();
+  };
+
+  AzureDevopsTeamsCtrl.prototype.render = function () {
+    var query = this.props.query;
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form gf-form--grow"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+      className: "gf-form-label width-12",
+      title: "Team"
+    }, "Team"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__["Select"], {
+      className: "width-24",
+      options: this.state.Teams,
+      onChange: this.onTeamIdChange,
+      defaultValue: query.teamId,
+      value: this.state.Teams.find(function (proj) {
+        return proj.value === query.teamId;
+      }) || {
+        label: query.teamId,
+        value: query.teamName
+      },
+      allowCustomValue: true
+    })))));
+  };
+
+  return AzureDevopsTeamsCtrl;
+}(react__WEBPACK_IMPORTED_MODULE_2__["PureComponent"]);
+
+
+
+/***/ }),
+
+/***/ "./datasource.ts":
+/*!***********************!*\
+  !*** ./datasource.ts ***!
+  \***********************/
+/*! exports provided: Datasource */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Datasource", function() { return Datasource; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
+/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _AzureDevopsDatasource__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AzureDevopsDatasource */ "./AzureDevopsDatasource.ts");
+
+
+
+
+
+var Datasource =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Datasource, _super);
+
+  function Datasource(instanceSettings, templateSrv) {
+    var _this = _super.call(this, instanceSettings) || this;
+
+    _this.instanceSettings = instanceSettings;
+    _this.templateSrv = templateSrv;
+    _this.azureDevopsDataSource = new _AzureDevopsDatasource__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsDataSource"](_this.instanceSettings);
+    return _this;
+  }
+
+  Datasource.prototype.testDatasource = function () {
+    return this.azureDevopsDataSource.testConnection();
+  };
+
+  Datasource.prototype.query = function (options) {
+    var promises = [];
+    var azureDevopsOptions = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["cloneDeep"])(options);
+
+    if (azureDevopsOptions.targets.length > 0) {
+      var azureDevopsPromise = this.azureDevopsDataSource.query(azureDevopsOptions);
+
+      if (azureDevopsPromise) {
+        promises.push(azureDevopsPromise);
+      }
+    }
+
+    return Promise.all(promises).then(function (results) {
+      return {
+        data: Object(lodash__WEBPACK_IMPORTED_MODULE_1__["flatten"])(results)
+      };
+    });
+  };
+
+  Datasource.prototype.annotationQuery = function () {
+    var promises = [];
+    return Promise.all(promises).then(function (results) {
+      return [];
+    });
+  };
+
+  Datasource.prototype.metricFindQuery = function (query) {
+    return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+      var results, projects, projectId, teams, projectId, teams;
+      return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+        switch (_a.label) {
+          case 0:
+            if (!query) {
+              return [2
+              /*return*/
+              , Promise.resolve([])];
+            }
+
+            query = this.templateSrv.replace(query);
+            results = [];
+            if (!(query.startsWith('Projects(') && query.endsWith(')'))) return [3
+            /*break*/
+            , 2];
+            return [4
+            /*yield*/
+            , this.azureDevopsDataSource.getProjects()];
+
+          case 1:
+            projects = _a.sent();
+            results = projects.map(function (p) {
+              return p.asSelectable();
+            }).map(function (p) {
+              return {
+                text: p.label,
+                value: p.value
+              };
+            });
+            return [3
+            /*break*/
+            , 6];
+
+          case 2:
+            if (!(query.startsWith('Teams(') && query.endsWith(')'))) return [3
+            /*break*/
+            , 4];
+            projectId = query.replace("Teams(", "").slice(0, -1);
+            return [4
+            /*yield*/
+            , this.azureDevopsDataSource.getTeamsByProject(projectId)];
+
+          case 3:
+            teams = _a.sent();
+            results = teams.map(function (p) {
+              return p.asSelectable();
+            }).map(function (p) {
+              return {
+                text: p.label,
+                value: p.value
+              };
+            });
+            return [3
+            /*break*/
+            , 6];
+
+          case 4:
+            if (!(query.startsWith('Pipelines(') && query.endsWith(')'))) return [3
+            /*break*/
+            , 6];
+            projectId = query.replace("Pipelines(", "").slice(0, -1);
+            return [4
+            /*yield*/
+            , this.azureDevopsDataSource.getPipelines(projectId)];
+
+          case 5:
+            teams = _a.sent();
+            results = teams.map(function (p) {
+              return p.asSelectable();
+            }).map(function (p) {
+              return {
+                text: p.label,
+                value: p.value
+              };
+            });
+            _a.label = 6;
+
+          case 6:
+            return [2
+            /*return*/
+            , Promise.resolve(results)];
+        }
+      });
+    });
+  };
+
+  return Datasource;
+}(_grafana_data__WEBPACK_IMPORTED_MODULE_2__["DataSourceApi"]);
+
+
+
+/***/ }),
+
+/***/ "./editors/AzureDevopsAnnotationsEditor.tsx":
+/*!**************************************************!*\
+  !*** ./editors/AzureDevopsAnnotationsEditor.tsx ***!
+  \**************************************************/
 /*! exports provided: AzureDevopsAnnotationsEditor */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -376,87 +1237,56 @@ function (_super) {
 
 /***/ }),
 
-/***/ "./AzureDevopsDatasource.ts":
-/*!**********************************!*\
-  !*** ./AzureDevopsDatasource.ts ***!
-  \**********************************/
-/*! exports provided: AzureDevopsDataSource */
+/***/ "./editors/AzureDevopsConfigEditor.tsx":
+/*!*********************************************!*\
+  !*** ./editors/AzureDevopsConfigEditor.tsx ***!
+  \*********************************************/
+/*! exports provided: AzureDevopsConfigEditor */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsDataSource", function() { return AzureDevopsDataSource; });
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsConfigEditor", function() { return AzureDevopsConfigEditor; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__);
 
-var AzureDevopsDataSource =
+
+
+
+var AzureDevopsConfigEditor =
 /** @class */
-function () {
-  function AzureDevopsDataSource(instanceSettings, backendSrv, templateSrv) {
-    this.instanceSettings = instanceSettings;
-    this.backendSrv = backendSrv;
-    this.templateSrv = templateSrv;
-    this.url = this.instanceSettings.url + '/azuredevops';
-    console.log(_typeof(this.templateSrv));
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsConfigEditor, _super);
+
+  function AzureDevopsConfigEditor(props) {
+    return _super.call(this, props) || this;
   }
 
-  AzureDevopsDataSource.prototype.doAzureDevopsRequest = function (options, maxRetries) {
-    var _this = this;
-
-    if (maxRetries === void 0) {
-      maxRetries = 1;
-    }
-
-    return this.backendSrv.datasourceRequest({
-      method: 'GET',
-      url: this.url + "/_apis/projects?api-version=6.0-preview.4"
-    })["catch"](function (error) {
-      if (maxRetries > 0) {
-        return _this.doAzureDevopsRequest(options, maxRetries - 1);
-      }
-
-      throw error;
+  AzureDevopsConfigEditor.prototype.render = function () {
+    var _a = this.props,
+        options = _a.options,
+        onOptionsChange = _a.onOptionsChange;
+    return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__["DataSourceHttpSettings"], {
+      defaultUrl: "https://dev.azure.com/<INSTANCE>",
+      dataSourceConfig: options,
+      onChange: onOptionsChange
     });
   };
 
-  AzureDevopsDataSource.prototype.doQueries = function (queries) {
-    var _this = this;
-
-    return queries.map(function (query) {
-      return _this.doAzureDevopsRequest(query).then(function (result) {
-        return {
-          result: result,
-          query: query
-        };
-      })["catch"](function (error) {
-        throw {
-          error: error,
-          query: query
-        };
-      });
-    });
-  };
-
-  AzureDevopsDataSource.prototype.query = function (options) {
-    var queries = options.targets.filter(function (item) {
-      return item.hide !== true;
-    });
-    var promises = this.doQueries(queries);
-    return Promise.all(promises).then(function (results) {
-      return results;
-    });
-  };
-
-  return AzureDevopsDataSource;
-}();
+  return AzureDevopsConfigEditor;
+}(react__WEBPACK_IMPORTED_MODULE_1__["PureComponent"]);
 
 
 
 /***/ }),
 
-/***/ "./AzureDevopsQueryEditor.tsx":
-/*!************************************!*\
-  !*** ./AzureDevopsQueryEditor.tsx ***!
-  \************************************/
+/***/ "./editors/AzureDevopsQueryEditor.tsx":
+/*!********************************************!*\
+  !*** ./editors/AzureDevopsQueryEditor.tsx ***!
+  \********************************************/
 /*! exports provided: AzureDevopsQueryEditor */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -464,10 +1294,57 @@ function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsQueryEditor", function() { return AzureDevopsQueryEditor; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _ctrl_AzureDevopsProject__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../ctrl/AzureDevopsProject */ "./ctrl/AzureDevopsProject.tsx");
+/* harmony import */ var _ctrl_AzureDevopsPipeline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../ctrl/AzureDevopsPipeline */ "./ctrl/AzureDevopsPipeline.tsx");
+/* harmony import */ var _ctrl_AzureDevopsTeams__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./../ctrl/AzureDevopsTeams */ "./ctrl/AzureDevopsTeams.tsx");
 
 
+
+
+
+
+
+var serviceTypes = [{
+  label: 'Pipelines',
+  value: 'pipelines'
+}, {
+  label: 'Boards',
+  value: 'boards'
+}, {
+  label: 'Repositories',
+  value: 'repositories'
+}, {
+  label: 'Test Plans',
+  value: 'testPlans'
+}, {
+  label: 'Artifacts',
+  value: 'artifacts'
+}];
+var queryTypes = [{
+  label: 'Pipeline Runs',
+  value: 'pipelines_runs'
+}, {
+  label: 'Release Deployments',
+  value: 'release_deployments'
+}, {
+  label: 'Build Builds',
+  value: 'build_builds'
+}, {
+  label: 'Teams',
+  value: 'teams'
+}, {
+  label: 'Backlogs',
+  value: 'teams_backlogs'
+}, {
+  label: 'WorkItem',
+  value: 'teams_work_items'
+}];
 
 var AzureDevopsQueryEditor =
 /** @class */
@@ -475,151 +1352,96 @@ function (_super) {
   Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsQueryEditor, _super);
 
   function AzureDevopsQueryEditor() {
-    return _super !== null && _super.apply(this, arguments) || this;
-  }
+    var _this = _super !== null && _super.apply(this, arguments) || this;
 
-  AzureDevopsQueryEditor.prototype.render = function () {
-    return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, "Azure Devops Query Editor");
-  };
+    _this.onQueryTypeChange = function (service) {
+      var _a = _this.props,
+          query = _a.query,
+          onChange = _a.onChange;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        queryType: service.value
+      }));
+    };
 
-  return AzureDevopsQueryEditor;
-}(react__WEBPACK_IMPORTED_MODULE_1__["PureComponent"]);
+    _this.onServiceTypeChange = function (service) {
+      var _a = _this.props,
+          query = _a.query,
+          onChange = _a.onChange;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        serviceType: service.value
+      }));
+    };
 
-
-
-/***/ }),
-
-/***/ "./config/config_ctrl.ts":
-/*!*******************************!*\
-  !*** ./config/config_ctrl.ts ***!
-  \*******************************/
-/*! exports provided: AzureDevopsConfigCtrl */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsConfigCtrl", function() { return AzureDevopsConfigCtrl; });
-var AzureDevopsConfigCtrl =
-/** @class */
-function () {
-  function AzureDevopsConfigCtrl() {}
-
-  AzureDevopsConfigCtrl.templateUrl = './config/config.html';
-  return AzureDevopsConfigCtrl;
-}();
-
-
-
-/***/ }),
-
-/***/ "./datasource.ts":
-/*!***********************!*\
-  !*** ./datasource.ts ***!
-  \***********************/
-/*! exports provided: Datasource */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Datasource", function() { return Datasource; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _AzureDevopsDatasource__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AzureDevopsDatasource */ "./AzureDevopsDatasource.ts");
-
-
-
-
-
-var Datasource =
-/** @class */
-function (_super) {
-  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Datasource, _super);
-
-  function Datasource(instanceSettings, backendSrv, templateSrv) {
-    var _this = _super.call(this, instanceSettings) || this;
-
-    _this.instanceSettings = instanceSettings;
-    _this.backendSrv = backendSrv;
-    _this.templateSrv = templateSrv;
-    _this.azureDevopsDataSource = new _AzureDevopsDatasource__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsDataSource"](_this.instanceSettings, _this.backendSrv, _this.templateSrv);
     return _this;
   }
 
-  Datasource.prototype.testDatasource = function () {
-    var _this = this;
-
-    return new Promise(function (resolve, reject) {
-      return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
-          this.azureDevopsDataSource.query({
-            targets: [{
-              hide: false
-            }]
-          }).then(function (result) {
-            var res = result && result[0] ? result[0] : undefined;
-
-            if (res && res.result && res.result.status === 200 && res.result.data && res.result.data.count > 0) {
-              resolve({
-                message: "Successfully Connected to Azure Devops. " + res.result.data.count + " projects found.",
-                status: 'success'
-              });
-            } else {
-              reject({
-                message: 'Failed to fetch details from Azure Devops',
-                status: 'error'
-              });
-            }
-          })["catch"](function (ex) {
-            reject({
-              message: 'Failed to connected Azure Devops',
-              status: 'error'
-            });
-          });
-          return [2
-          /*return*/
-          ];
-        });
-      });
+  AzureDevopsQueryEditor.prototype.render = function () {
+    var query = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["defaults"])(this.props.query, {
+      serviceType: 'pipelines',
+      queryType: 'pipelines_runs'
     });
-  };
+    var DetailCtrl;
 
-  Datasource.prototype.query = function (options) {
-    var promises = [];
-    var azureDevopsOptions = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["cloneDeep"])(options);
+    switch (query.queryType) {
+      case 'pipelines_runs':
+        if (query && query.serviceType === 'pipelines' && query.projectId) {
+          DetailCtrl = react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_ctrl_AzureDevopsPipeline__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsPipelineCtrl"], {
+            onChange: this.props.onChange,
+            query: query,
+            datasource: this.props.datasource
+          });
+        }
 
-    if (azureDevopsOptions.targets.length > 0) {
-      var azureDevopsPromise = this.azureDevopsDataSource.query(azureDevopsOptions);
+        break;
 
-      if (azureDevopsPromise) {
-        promises.push(azureDevopsPromise);
-      }
+      default:
+        DetailCtrl = react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_ctrl_AzureDevopsTeams__WEBPACK_IMPORTED_MODULE_6__["AzureDevopsTeamsCtrl"], {
+          onChange: this.props.onChange,
+          query: query,
+          datasource: this.props.datasource
+        });
+        break;
     }
 
-    return Promise.all(promises).then(function (results) {
-      return {
-        data: Object(lodash__WEBPACK_IMPORTED_MODULE_1__["flatten"])(results)
-      };
-    });
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+      className: "gf-form-label width-12",
+      title: "Query Type"
+    }, "Service Type"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+      className: "width-24",
+      value: serviceTypes.find(function (service) {
+        return service.value === query.serviceType;
+      }),
+      options: serviceTypes,
+      defaultValue: query.serviceType,
+      onChange: this.onServiceTypeChange
+    }))), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+      className: "gf-form-label width-12",
+      title: "Query Type"
+    }, "Service Type"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+      className: "width-24",
+      value: queryTypes.find(function (service) {
+        return service.value === query.queryType;
+      }),
+      options: queryTypes,
+      defaultValue: query.queryType,
+      onChange: this.onQueryTypeChange
+    }))), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_ctrl_AzureDevopsProject__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsProjectCtrl"], {
+      onChange: this.props.onChange,
+      query: query,
+      datasource: this.props.datasource
+    }), DetailCtrl);
   };
 
-  Datasource.prototype.annotationQuery = function (options) {
-    console.log(options);
-    var promises = [];
-    return Promise.all(promises).then(function (results) {
-      return [];
-    });
-  };
-
-  Datasource.prototype.metricFindQuery = function (query) {
-    console.log(query);
-    return Promise.resolve([]);
-  };
-
-  return Datasource;
-}(_grafana_data__WEBPACK_IMPORTED_MODULE_2__["DataSourceApi"]);
+  return AzureDevopsQueryEditor;
+}(react__WEBPACK_IMPORTED_MODULE_2__["PureComponent"]);
 
 
 
@@ -638,15 +1460,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
 /* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _datasource__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./datasource */ "./datasource.ts");
-/* harmony import */ var _config_config_ctrl__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config/config_ctrl */ "./config/config_ctrl.ts");
-/* harmony import */ var _AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AzureDevopsQueryEditor */ "./AzureDevopsQueryEditor.tsx");
-/* harmony import */ var _AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AzureDevopsAnnotationsEditor */ "./AzureDevopsAnnotationsEditor.tsx");
+/* harmony import */ var _editors_AzureDevopsConfigEditor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editors/AzureDevopsConfigEditor */ "./editors/AzureDevopsConfigEditor.tsx");
+/* harmony import */ var _editors_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./editors/AzureDevopsQueryEditor */ "./editors/AzureDevopsQueryEditor.tsx");
+/* harmony import */ var _editors_AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./editors/AzureDevopsAnnotationsEditor */ "./editors/AzureDevopsAnnotationsEditor.tsx");
 
 
 
 
 
-var plugin = new _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"](_datasource__WEBPACK_IMPORTED_MODULE_1__["Datasource"]).setConfigCtrl(_config_config_ctrl__WEBPACK_IMPORTED_MODULE_2__["AzureDevopsConfigCtrl"]).setQueryEditor(_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsQueryEditor"]).setAnnotationQueryCtrl(_AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsAnnotationsEditor"]);
+var plugin = new _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"](_datasource__WEBPACK_IMPORTED_MODULE_1__["Datasource"]).setConfigEditor(_editors_AzureDevopsConfigEditor__WEBPACK_IMPORTED_MODULE_2__["AzureDevopsConfigEditor"]).setQueryEditor(_editors_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsQueryEditor"]).setAnnotationQueryCtrl(_editors_AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsAnnotationsEditor"]);
 
 /***/ }),
 
@@ -658,6 +1480,28 @@ var plugin = new _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"](
 /***/ (function(module, exports) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE__grafana_data__;
+
+/***/ }),
+
+/***/ "@grafana/runtime":
+/*!***********************************!*\
+  !*** external "@grafana/runtime" ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__grafana_runtime__;
+
+/***/ }),
+
+/***/ "@grafana/ui":
+/*!******************************!*\
+  !*** external "@grafana/ui" ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__grafana_ui__;
 
 /***/ }),
 

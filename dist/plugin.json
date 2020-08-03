@@ -6,7 +6,7 @@
   "metrics": true,
   "info": {
     "version": "0.0.1",
-    "updated": "2020-08-01",
+    "updated": "2020-08-03",
     "description": "Grafana Azure Devops DataSource",
     "author": {
       "name": "Sriramajeyam Sugumaran",
@@ -33,17 +33,5 @@
     "grafanaDependency": ">=5.0.0",
     "plugins": []
   },
-  "routes": [
-    {
-      "path": "azuredevops",
-      "method": "*",
-      "url": "{{ .JsonData.azureDevopsURL }}",
-      "headers": [
-        {
-          "name": "Accept",
-          "content": "application/json"
-        }
-      ]
-    }
-  ]
+  "routes": []
 }
