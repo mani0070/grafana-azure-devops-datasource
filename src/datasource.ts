@@ -1,35 +1,17 @@
 import { flatten, cloneDeep } from 'lodash';
 import { DataSourceApi } from '@grafana/data';
 import { AzureDevopsDataSource } from './AzureDevopsDatasource';
+import { AzureDevopsProject, AzureDevopsTeam } from 'AzureDevopsConnection';
 
 export class Datasource extends DataSourceApi {
   private azureDevopsDataSource: AzureDevopsDataSource;
-  constructor(private instanceSettings: any, private backendSrv: any, private templateSrv: any) {
+
+  constructor(private instanceSettings: any, private templateSrv: any) {
     super(instanceSettings);
-    this.azureDevopsDataSource = new AzureDevopsDataSource(this.instanceSettings, this.backendSrv, this.templateSrv);
+    this.azureDevopsDataSource = new AzureDevopsDataSource(this.instanceSettings);
   }
   testDatasource() {
-    return new Promise(async (resolve: any, reject: any) => {
-      this.azureDevopsDataSource
-        .query({
-          targets: [
-            {
-              hide: false,
-            },
-          ],
-        })
-        .then((result: any) => {
-          const res = result && result[0] ? result[0] : undefined;
-          if (res && res.result && res.result.status === 200 && res.result.data && res.result.data.count > 0) {
-            resolve({ message: `Successfully Connected to Azure Devops. ${res.result.data.count} projects found.`, status: 'success' });
-          } else {
-            reject({ message: 'Failed to fetch details from Azure Devops', status: 'error' });
-          }
-        })
-        .catch((ex: any) => {
-          reject({ message: 'Failed to connected Azure Devops', status: 'error' });
-        });
-    });
+    return this.azureDevopsDataSource.testConnection();
   }
   query(options: any) {
     const promises: any[] = [];
@@ -44,15 +26,51 @@ export class Datasource extends DataSourceApi {
       return { data: flatten(results) };
     });
   }
-  annotationQuery(options: any) {
-    console.log(options);
+  annotationQuery() {
     const promises: any[] = [];
     return Promise.all(promises).then(results => {
       return [];
     });
   }
-  metricFindQuery(query: string) {
-    console.log(query);
-    return Promise.resolve([]);
+  async metricFindQuery(query: string) {
+    if (!query) {
+      return Promise.resolve([]);
+    }
+    query = this.templateSrv.replace(query);
+    let results: any[] = [];
+    if (query.startsWith('Projects(') && query.endsWith(')')) {
+      const projects: AzureDevopsProject[] = await this.azureDevopsDataSource.getProjects();
+      results = projects
+        .map(p => p.asSelectable())
+        .map(p => {
+          return {
+            text: p.label,
+            value: p.value,
+          };
+        });
+    } else if (query.startsWith('Teams(') && query.endsWith(')')) {
+      const projectId = query.replace(`Teams(`, ``).slice(0, -1);
+      const teams: AzureDevopsTeam[] = await this.azureDevopsDataSource.getTeamsByProject(projectId);
+      results = teams
+        .map(p => p.asSelectable())
+        .map(p => {
+          return {
+            text: p.label,
+            value: p.value,
+          };
+        });
+    } else if (query.startsWith('Pipelines(') && query.endsWith(')')) {
+      const projectId = query.replace(`Pipelines(`, ``).slice(0, -1);
+      const teams: AzureDevopsTeam[] = await this.azureDevopsDataSource.getPipelines(projectId);
+      results = teams
+        .map(p => p.asSelectable())
+        .map(p => {
+          return {
+            text: p.label,
+            value: p.value,
+          };
+        });
+    }
+    return Promise.resolve(results);
   }
 }
