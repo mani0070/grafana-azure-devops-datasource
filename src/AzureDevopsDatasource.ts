@@ -1,7 +1,7 @@
 export class AzureDevopsDataSource {
   private url: string;
   constructor(private instanceSettings: any, private backendSrv: any, private templateSrv: any) {
-    this.url = this.instanceSettings.url + '/azuredevops';
+    this.url = this.instanceSettings.url;
     console.log(typeof this.templateSrv);
   }
   private doAzureDevopsRequest(options: any, maxRetries = 1) {

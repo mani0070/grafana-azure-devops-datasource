@@ -33,17 +33,5 @@
     "grafanaDependency": ">=5.0.0",
     "plugins": []
   },
-  "routes": [
-    {
-      "path": "azuredevops",
-      "method": "*",
-      "url": "{{ .JsonData.azureDevopsURL }}",
-      "headers": [
-        {
-          "name": "Accept",
-          "content": "application/json"
-        }
-      ]
-    }
-  ]
+  "routes": []
 }
