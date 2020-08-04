@@ -1,15 +1,21 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { AzureDevopsConnection, AzureDevopsPipeline } from './../AzureDevopsConnection';
 import { Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { AzureDevopsInstance } from './../AzureDevopsInstance';
+import { AzureDevopsItem } from './../core/AzureDevopsItem';
 
+export class AzureDevopsPipeline extends AzureDevopsItem {
+  constructor(options: any) {
+    super(options);
+  }
+}
 export class AzureDevopsPipelineCtrl extends PureComponent<any, any> {
-  state: any = defaults(this.state, { projectId: '', AzureDevopsPipelines: [] });
+  state: any = defaults(this.state, { AzureDevopsPipelines: [] });
   loadPipelines = () => {
     return new Promise(resolve => {
-      const az: AzureDevopsConnection = new AzureDevopsConnection(this.props.datasource.instanceSettings);
-      az.getPipelines(this.props.query.projectId || '').then((res: AzureDevopsPipeline[]) => {
+      const az: AzureDevopsInstance = new AzureDevopsInstance(this.props.datasource.instanceSettings);
+      az.pipelineService.getPipelinesByProjectId(this.props.query.projectId || '').then((res: AzureDevopsPipeline[]) => {
         this.setState({
           AzureDevopsPipelines: res.map(r => {
             return r.asSelectable();
@@ -19,11 +25,7 @@ export class AzureDevopsPipelineCtrl extends PureComponent<any, any> {
       });
     });
   };
-  getPipelines() {
-    return this.state.AzureDevopsPipelines;
-  }
   componentWillMount() {
-    this.state.projectId = this.props.query.projectId || '';
     this.loadPipelines();
   }
   componentDidUpdate = (prevProps: any) => {

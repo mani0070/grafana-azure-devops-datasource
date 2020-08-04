@@ -1,23 +1,32 @@
 import { flatten, cloneDeep } from 'lodash';
-import { DataSourceApi } from '@grafana/data';
-import { AzureDevopsDataSource } from './AzureDevopsDatasource';
-import { AzureDevopsProject, AzureDevopsTeam } from 'AzureDevopsConnection';
+import { DataSourceApi, DataQuery } from '@grafana/data';
+import { AzureDevopsInstance } from './azure_devops/AzureDevopsInstance';
+import { AzureDevopsProject } from './azure_devops/core/AzureDevopsProject';
+import { AzureDevopsTeam } from './azure_devops/core/AzureDevopsTeam';
+
+export interface AzureDevopsQueryStructure extends DataQuery {
+  serviceType?: string;
+  queryType?: string;
+  projectId?: string;
+  projectName?: string;
+  pipelineId?: string;
+  pipelineName?: string;
+}
 
 export class Datasource extends DataSourceApi {
-  private azureDevopsDataSource: AzureDevopsDataSource;
-
+  private azureDevopsInstance: AzureDevopsInstance;
   constructor(private instanceSettings: any, private templateSrv: any) {
     super(instanceSettings);
-    this.azureDevopsDataSource = new AzureDevopsDataSource(this.instanceSettings);
+    this.azureDevopsInstance = new AzureDevopsInstance(this.instanceSettings);
   }
   testDatasource() {
-    return this.azureDevopsDataSource.testConnection();
+    return this.azureDevopsInstance.testConnection();
   }
   query(options: any) {
     const promises: any[] = [];
     const azureDevopsOptions = cloneDeep(options);
     if (azureDevopsOptions.targets.length > 0) {
-      const azureDevopsPromise = this.azureDevopsDataSource.query(azureDevopsOptions);
+      const azureDevopsPromise = this.azureDevopsInstance.query(azureDevopsOptions);
       if (azureDevopsPromise) {
         promises.push(azureDevopsPromise);
       }
@@ -28,48 +37,25 @@ export class Datasource extends DataSourceApi {
   }
   annotationQuery() {
     const promises: any[] = [];
-    return Promise.all(promises).then(results => {
-      return [];
-    });
+    return Promise.all(promises).then(results => []);
   }
-  async metricFindQuery(query: string) {
+  async metricFindQuery(query = '') {
     if (!query) {
       return Promise.resolve([]);
     }
     query = this.templateSrv.replace(query);
     let results: any[] = [];
     if (query.startsWith('Projects(') && query.endsWith(')')) {
-      const projects: AzureDevopsProject[] = await this.azureDevopsDataSource.getProjects();
-      results = projects
-        .map(p => p.asSelectable())
-        .map(p => {
-          return {
-            text: p.label,
-            value: p.value,
-          };
-        });
+      const projects: AzureDevopsProject[] = await this.azureDevopsInstance.listProjects();
+      results = projects.map(p => p.asVariable());
     } else if (query.startsWith('Teams(') && query.endsWith(')')) {
       const projectId = query.replace(`Teams(`, ``).slice(0, -1);
-      const teams: AzureDevopsTeam[] = await this.azureDevopsDataSource.getTeamsByProject(projectId);
-      results = teams
-        .map(p => p.asSelectable())
-        .map(p => {
-          return {
-            text: p.label,
-            value: p.value,
-          };
-        });
+      const teams: AzureDevopsTeam[] = await this.azureDevopsInstance.listTeamsByProject(projectId);
+      results = teams.map(p => p.asVariable());
     } else if (query.startsWith('Pipelines(') && query.endsWith(')')) {
       const projectId = query.replace(`Pipelines(`, ``).slice(0, -1);
-      const teams: AzureDevopsTeam[] = await this.azureDevopsDataSource.getPipelines(projectId);
-      results = teams
-        .map(p => p.asSelectable())
-        .map(p => {
-          return {
-            text: p.label,
-            value: p.value,
-          };
-        });
+      const teams: AzureDevopsTeam[] = await this.azureDevopsInstance.pipelineService.getPipelinesByProjectId(projectId);
+      results = teams.map(p => p.asVariable());
     }
     return Promise.resolve(results);
   }

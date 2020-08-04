@@ -1,15 +1,20 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { AzureDevopsConnection, AzureDevopsProject } from './../AzureDevopsConnection';
 import { Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { AzureDevopsInstance } from './../AzureDevopsInstance';
+import { AzureDevopsItem } from './AzureDevopsItem';
 
+export class AzureDevopsProject extends AzureDevopsItem {
+  constructor(options: any) {
+    super({ id: options.id, name: options.name });
+  }
+}
 export class AzureDevopsProjectCtrl extends PureComponent<any, any> {
   state: any = defaults(this.state, { AzureDevopsProjects: [] });
-
   componentWillMount() {
-    const az: AzureDevopsConnection = new AzureDevopsConnection(this.props.datasource.instanceSettings);
-    az.getProjects().then((res: AzureDevopsProject[]) => {
+    const az: AzureDevopsInstance = new AzureDevopsInstance(this.props.datasource.instanceSettings);
+    az.listProjects().then((res: AzureDevopsProject[]) => {
       this.setState({
         AzureDevopsProjects: res.map(r => {
           return r.asSelectable();

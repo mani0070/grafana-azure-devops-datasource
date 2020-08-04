@@ -1,15 +1,21 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { AzureDevopsConnection, AzureDevopsTeam } from './../AzureDevopsConnection';
 import { Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { AzureDevopsItem } from './AzureDevopsItem';
+import { AzureDevopsInstance } from './../AzureDevopsInstance';
 
-export class AzureDevopsTeamsCtrl extends PureComponent<any, any> {
+export class AzureDevopsTeam extends AzureDevopsItem {
+  constructor(options: any) {
+    super(options);
+  }
+}
+export class AzureDevopsTeamCtrl extends PureComponent<any, any> {
   state: any = defaults(this.state, { projectId: '', Teams: [] });
   loadTeams = () => {
     return new Promise(resolve => {
-      const az: AzureDevopsConnection = new AzureDevopsConnection(this.props.datasource.instanceSettings);
-      az.getTeamsByProject(this.props.query.projectId || '').then((res: AzureDevopsTeam[]) => {
+      const az: AzureDevopsInstance = new AzureDevopsInstance(this.props.datasource.instanceSettings);
+      az.listTeamsByProject(this.props.query.projectId || '').then((res: AzureDevopsTeam[]) => {
         this.setState({
           Teams: res.map(r => {
             return r.asSelectable();
@@ -19,9 +25,6 @@ export class AzureDevopsTeamsCtrl extends PureComponent<any, any> {
       });
     });
   };
-  getPipelines() {
-    return this.state.Teams;
-  }
   componentWillMount() {
     this.state.projectId = this.props.query.projectId || '';
     this.loadTeams();

@@ -5,6 +5,7 @@ import { DataSourcePluginOptionsEditorProps, DataSourceJsonData } from '@grafana
 interface AzureDevopsOptions extends DataSourceJsonData {}
 
 export type Props = DataSourcePluginOptionsEditorProps<AzureDevopsOptions>;
+
 export class AzureDevopsConfigEditor extends PureComponent<Props> {
   constructor(props: Props) {
     super(props);
