@@ -6,7 +6,7 @@
   "metrics": true,
   "info": {
     "version": "0.0.1",
-    "updated": "2020-08-03",
+    "updated": "2020-08-04",
     "description": "Grafana Azure Devops DataSource",
     "author": {
       "name": "Sriramajeyam Sugumaran",
