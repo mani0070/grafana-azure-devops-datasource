@@ -1290,16 +1290,10 @@ function (_super) {
 
   AzureDevopsPipelineCtrl.prototype.render = function () {
     var query = this.props.query;
-    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
-      className: "gf-form-inline"
-    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
-      className: "gf-form"
-    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
-      className: "gf-form gf-form--grow"
-    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Projects"
-    }, "Pipeline"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+    }, "Pipeline Name"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       options: this.state.AzureDevopsPipelines,
       onChange: this.onPipelineIdChange,
@@ -1311,7 +1305,7 @@ function (_super) {
         value: query.pipelineName
       },
       allowCustomValue: true
-    })))));
+    }));
   };
 
   return AzureDevopsPipelineCtrl;
@@ -1476,7 +1470,7 @@ function (_super) {
 
     switch (query.queryType) {
       case 'pipelines_runs':
-        detailCtrl = react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(_AzurePipeline__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsPipelineCtrl"], {
+        detailCtrl = react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_3___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(_AzurePipeline__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsPipelineCtrl"], {
           onChange: this.props.onChange,
           query: query,
           datasource: this.props.datasource
@@ -1484,11 +1478,7 @@ function (_super) {
         break;
     }
 
-    return react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("div", {
-      className: "gf-form-inline"
-    }, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("div", {
-      className: "gf-form"
-    }, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("label", {
+    return react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_3___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Query Type"
     }, "Query Type"), react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__["Select"], {
@@ -1499,7 +1489,7 @@ function (_super) {
       options: queryTypes,
       defaultValue: query.queryType,
       onChange: this.onQueryTypeChange
-    }), detailCtrl)));
+    }), detailCtrl);
   };
 
   return AzurePipelineServiceCtrl;
@@ -1960,7 +1950,11 @@ function (_super) {
       onChange: this.props.onChange,
       query: query,
       datasource: this.props.datasource
-    }))), ServiceCtrl);
+    }))), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: "gf-form"
+    }, ServiceCtrl)));
   };
 
   return AzureDevopsQueryEditor;
