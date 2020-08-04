@@ -114,30 +114,26 @@ export class AzurePipelineServiceCtrl extends PureComponent<any, any> {
     switch (query.queryType) {
       case 'pipelines_runs':
         detailCtrl = (
-          <div>
+          <>
             <AzureDevopsPipelineCtrl onChange={this.props.onChange} query={query} datasource={this.props.datasource} />
-          </div>
+          </>
         );
         break;
     }
     return (
-      <div>
-        <div className="gf-form-inline">
-          <div className="gf-form">
-            <label className="gf-form-label width-12" title="Query Type">
-              Query Type
-            </label>
-            <Select
-              className="width-24"
-              value={queryTypes.find((service: any) => service.value === query.queryType)}
-              options={queryTypes}
-              defaultValue={query.queryType}
-              onChange={this.onQueryTypeChange}
-            />
-            {detailCtrl}
-          </div>
-        </div>
-      </div>
+      <>
+        <label className="gf-form-label width-12" title="Query Type">
+          Query Type
+        </label>
+        <Select
+          className="width-24"
+          value={queryTypes.find((service: any) => service.value === query.queryType)}
+          options={queryTypes}
+          defaultValue={query.queryType}
+          onChange={this.onQueryTypeChange}
+        />
+        {detailCtrl}
+      </>
     );
   }
 }

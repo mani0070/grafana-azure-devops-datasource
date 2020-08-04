@@ -42,30 +42,24 @@ export class AzureDevopsPipelineCtrl extends PureComponent<any, any> {
   render() {
     const { query } = this.props;
     return (
-      <div>
-        <div className="gf-form-inline">
-          <div className="gf-form">
-            <div className="gf-form gf-form--grow">
-              <label className="gf-form-label width-12" title="Projects">
-                Pipeline
-              </label>
-              <Select
-                className="width-24"
-                options={this.state.AzureDevopsPipelines}
-                onChange={this.onPipelineIdChange}
-                defaultValue={query.pipelineId}
-                value={
-                  this.state.AzureDevopsPipelines.find((proj: any) => proj.value === query.pipelineId) || {
-                    label: query.pipelineId,
-                    value: query.pipelineName,
-                  }
-                }
-                allowCustomValue
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <>
+        <label className="gf-form-label width-12" title="Projects">
+          Pipeline Name
+        </label>
+        <Select
+          className="width-24"
+          options={this.state.AzureDevopsPipelines}
+          onChange={this.onPipelineIdChange}
+          defaultValue={query.pipelineId}
+          value={
+            this.state.AzureDevopsPipelines.find((proj: any) => proj.value === query.pipelineId) || {
+              label: query.pipelineId,
+              value: query.pipelineName,
+            }
+          }
+          allowCustomValue
+        />
+      </>
     );
   }
 }

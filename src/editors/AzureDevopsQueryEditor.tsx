@@ -46,7 +46,9 @@ export class AzureDevopsQueryEditor extends PureComponent<Props, State> {
             <AzureDevopsProjectCtrl onChange={this.props.onChange} query={query} datasource={this.props.datasource} />
           </div>
         </div>
-        {ServiceCtrl}
+        <div className="gf-form-inline">
+          <div className="gf-form">{ServiceCtrl}</div>
+        </div>
       </div>
     );
   }
