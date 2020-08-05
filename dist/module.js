@@ -456,10 +456,17 @@ function () {
       return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
           this.listProjects().then(function (res) {
-            resolve({
-              message: "Successfully connected to Azure Devops. " + res.length + " projects found.",
-              status: 'success'
-            });
+            if (res && res.length > 0) {
+              resolve({
+                message: "Successfully connected to Azure Devops. " + res.length + " projects found.",
+                status: 'success'
+              });
+            } else {
+              reject({
+                message: 'Failed to fetch details from Azure Devops',
+                status: 'error'
+              });
+            }
           })["catch"](function (ex) {
             reject({
               message: 'Failed to fetch details from Azure Devops',
@@ -1811,9 +1818,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__);
-
 
 
 
@@ -1822,19 +1826,85 @@ var AzureDevopsConfigEditor =
 function (_super) {
   Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureDevopsConfigEditor, _super);
 
-  function AzureDevopsConfigEditor(props) {
-    return _super.call(this, props) || this;
+  function AzureDevopsConfigEditor() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.onAzureDevopsURLChange = function (event) {
+      var _a = _this.props,
+          onOptionsChange = _a.onOptionsChange,
+          options = _a.options;
+      onOptionsChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, options), {
+        url: event.target.value
+      }));
+    };
+
+    _this.onPATTokenChange = function (event) {
+      var _a = _this.props,
+          onOptionsChange = _a.onOptionsChange,
+          options = _a.options;
+      onOptionsChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, options), {
+        secureJsonData: {
+          basicAuthPassword: event.target.value
+        }
+      }));
+    };
+
+    _this.onResetPATToken = function () {
+      var _a = _this.props,
+          onOptionsChange = _a.onOptionsChange,
+          options = _a.options;
+      onOptionsChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, options), {
+        secureJsonFields: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, options.secureJsonFields), {
+          basicAuthPassword: false
+        }),
+        secureJsonData: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, options.secureJsonData), {
+          basicAuthPassword: ''
+        })
+      }));
+    };
+
+    return _this;
   }
 
   AzureDevopsConfigEditor.prototype.render = function () {
-    var _a = this.props,
-        options = _a.options,
-        onOptionsChange = _a.onOptionsChange;
-    return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__["DataSourceHttpSettings"], {
-      defaultUrl: "https://dev.azure.com/<INSTANCE>",
-      dataSourceConfig: options,
-      onChange: onOptionsChange
-    });
+    var options = this.props.options;
+    options.basicAuth = true;
+    options.basicAuthUser = 'username';
+    var secureJsonFields = options.secureJsonFields;
+    var secureJsonData = options.secureJsonData || {};
+    return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", {
+      className: "page-heading"
+    }, "Azure Devops Settings"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+      className: "gf-form-label width-11",
+      title: "Azure Devops URL"
+    }, "Azure Devops URL"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+      className: "gf-form-input width-20",
+      type: "text",
+      onChange: this.onAzureDevopsURLChange,
+      value: options.url || '',
+      placeholder: "https://dev.azure.com/YOUR_INSTANCE_NAME"
+    }))), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+      className: "gf-form-inline"
+    }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+      className: "gf-form"
+    }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+      className: "gf-form-label width-11",
+      title: "API Key"
+    }, "PAT Token"), secureJsonFields && secureJsonFields.basicAuthPassword ? react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
+      className: "gf-form-label width-20"
+    }, "Configured"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
+      className: "gf-form-button btn btn-secondary width-6",
+      onClick: this.onResetPATToken
+    }, "Reset")) : react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
+      type: "password",
+      value: secureJsonData.basicAuthPassword || '',
+      className: "gf-form-input width-20",
+      onChange: this.onPATTokenChange
+    }))));
   };
 
   return AzureDevopsConfigEditor;
