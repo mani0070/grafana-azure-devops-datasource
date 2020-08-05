@@ -353,9 +353,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _Backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Backend */ "./azure_devops/Backend.ts");
 /* harmony import */ var _core_AzureDevopsProject__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./core/AzureDevopsProject */ "./azure_devops/core/AzureDevopsProject.tsx");
-/* harmony import */ var _core_AzureDevopsTeam__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./core/AzureDevopsTeam */ "./azure_devops/core/AzureDevopsTeam.tsx");
-/* harmony import */ var _pipelines_AzurePipelinesService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pipelines/AzurePipelinesService */ "./azure_devops/pipelines/AzurePipelinesService.tsx");
-/* harmony import */ var _boards_AzureBoardsService__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./boards/AzureBoardsService */ "./azure_devops/boards/AzureBoardsService.tsx");
+/* harmony import */ var _pipelines_AzurePipelinesService__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pipelines/AzurePipelinesService */ "./azure_devops/pipelines/AzurePipelinesService.tsx");
+/* harmony import */ var _boards_AzureBoardsService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./boards/AzureBoardsService */ "./azure_devops/boards/AzureBoardsService.tsx");
 
 
 
@@ -370,8 +369,9 @@ function () {
     this.instanceSettings = instanceSettings;
     this.projects = [];
     this.url = this.instanceSettings.url;
-    this.pipelineService = new _pipelines_AzurePipelinesService__WEBPACK_IMPORTED_MODULE_4__["AzurePipelinesService"](this.instanceSettings);
-    this.boardsService = new _boards_AzureBoardsService__WEBPACK_IMPORTED_MODULE_5__["AzureBoardsService"](this.instanceSettings);
+    this.pipelineService = new _pipelines_AzurePipelinesService__WEBPACK_IMPORTED_MODULE_3__["AzurePipelinesService"](this.instanceSettings);
+    this.boardsService = new _boards_AzureBoardsService__WEBPACK_IMPORTED_MODULE_4__["AzureBoardsService"](this.instanceSettings);
+    this.projectService = new _core_AzureDevopsProject__WEBPACK_IMPORTED_MODULE_2__["AzureProjectService"](this.instanceSettings);
   }
 
   AzureDevopsInstance.prototype.query = function (options) {
@@ -397,7 +397,7 @@ function () {
           break;
 
         case 'teams':
-          promises.push(_this.listTeamsByProject(q.projectId));
+          promises.push(_this.projectService.listTeams(q.projectId));
           break;
 
         case 'teams_backlogs':
@@ -430,22 +430,6 @@ function () {
     })["catch"](function (ex) {
       console.error(ex);
       return _this.projects;
-    });
-  };
-
-  AzureDevopsInstance.prototype.listTeamsByProject = function (projectId) {
-    return Object(_Backend__WEBPACK_IMPORTED_MODULE_1__["doBackendRequest"])({
-      method: 'GET',
-      url: this.url + ("/_apis/projects/" + projectId + "/teams?api-version=6.0-preview.3")
-    }, 2).then(function (response) {
-      if (response && response.data && response.data.value) {
-        return (response.data.value || []).map(function (result) {
-          return new _core_AzureDevopsTeam__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsTeam"](result);
-        });
-      }
-    })["catch"](function (ex) {
-      console.error(ex);
-      return [];
     });
   };
 
@@ -504,8 +488,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./../grafana */ "./grafana.ts");
 /* harmony import */ var _core_AzureDevopsItem__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./core/AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
 
 
@@ -569,7 +552,7 @@ function (_super) {
     }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Query Type"
-    }, "Service Type"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_2__["Select"], {
+    }, "Service Type"), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_2__["Select"], {
       className: "width-24",
       value: services.find(function (service) {
         return service.value === query.serviceType;
@@ -597,15 +580,14 @@ function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "doBackendRequest", function() { return doBackendRequest; });
-/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @grafana/runtime */ "@grafana/runtime");
-/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_grafana_runtime__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./../grafana */ "./grafana.ts");
 
 var doBackendRequest = function doBackendRequest(requestObject, maxRetries) {
   if (maxRetries === void 0) {
     maxRetries = 1;
   }
 
-  return Object(_grafana_runtime__WEBPACK_IMPORTED_MODULE_0__["getBackendSrv"])().datasourceRequest(requestObject)["catch"](function (error) {
+  return Object(_grafana__WEBPACK_IMPORTED_MODULE_0__["getBackendSrv"])().datasourceRequest(requestObject)["catch"](function (error) {
     if (maxRetries > 0) {
       return doBackendRequest(requestObject, maxRetries - 1);
     } else {
@@ -690,8 +672,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../../grafana */ "./grafana.ts");
 /* harmony import */ var _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
 /* harmony import */ var _core_AzureDevopsItem__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../core/AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
 
@@ -806,7 +787,7 @@ function (_super) {
     }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Projects"
-    }, "Backlog Type"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+    }, "Backlog Type"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       options: this.state.AzureBacklogTypes,
       onChange: this.onBacklogTypeIdChange,
@@ -949,22 +930,28 @@ function () {
 /*!**************************************************!*\
   !*** ./azure_devops/core/AzureDevopsProject.tsx ***!
   \**************************************************/
-/*! exports provided: AzureDevopsProject, AzureDevopsProjectCtrl */
+/*! exports provided: AzureDevopsProject, AzureProjectService, AzureDevopsProjectCtrl */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsProject", function() { return AzureDevopsProject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureProjectService", function() { return AzureProjectService; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzureDevopsProjectCtrl", function() { return AzureDevopsProjectCtrl; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
-/* harmony import */ var _AzureDevopsItem__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../../grafana */ "./grafana.ts");
+/* harmony import */ var _Backend__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../Backend */ "./azure_devops/Backend.ts");
+/* harmony import */ var _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
+/* harmony import */ var _AzureDevopsItem__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
+/* harmony import */ var _AzureDevopsTeam__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./AzureDevopsTeam */ "./azure_devops/core/AzureDevopsTeam.tsx");
+/* harmony import */ var _AzureDevopsService__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./../AzureDevopsService */ "./azure_devops/AzureDevopsService.tsx");
+
+
+
 
 
 
@@ -985,7 +972,41 @@ function (_super) {
   }
 
   return AzureDevopsProject;
-}(_AzureDevopsItem__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsItem"]);
+}(_AzureDevopsItem__WEBPACK_IMPORTED_MODULE_6__["AzureDevopsItem"]);
+
+
+
+var AzureProjectService =
+/** @class */
+function (_super) {
+  Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AzureProjectService, _super);
+
+  function AzureProjectService(instanceSettings) {
+    var _this = _super.call(this, 'project', 'Project') || this;
+
+    _this.instanceSettings = instanceSettings;
+    _this.url = _this.instanceSettings.url;
+    return _this;
+  }
+
+  AzureProjectService.prototype.listTeams = function (projectId) {
+    return Object(_Backend__WEBPACK_IMPORTED_MODULE_4__["doBackendRequest"])({
+      method: 'GET',
+      url: this.url + ("/_apis/projects/" + projectId + "/teams?api-version=6.0-preview.3")
+    }, 2).then(function (response) {
+      if (response && response.data && response.data.value) {
+        return (response.data.value || []).map(function (result) {
+          return new _AzureDevopsTeam__WEBPACK_IMPORTED_MODULE_7__["AzureDevopsTeam"](result);
+        });
+      }
+    })["catch"](function (ex) {
+      console.error(ex);
+      return [];
+    });
+  };
+
+  return AzureProjectService;
+}(_AzureDevopsService__WEBPACK_IMPORTED_MODULE_8__["AzureDevopsService"]);
 
 
 
@@ -1017,7 +1038,7 @@ function (_super) {
   AzureDevopsProjectCtrl.prototype.componentWillMount = function () {
     var _this = this;
 
-    var az = new _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsInstance"](this.props.datasource.instanceSettings);
+    var az = new _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsInstance"](this.props.datasource.instanceSettings);
     az.listProjects().then(function (res) {
       _this.setState({
         AzureDevopsProjects: res.map(function (r) {
@@ -1038,7 +1059,7 @@ function (_super) {
     }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Projects"
-    }, "Projects"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+    }, "Projects"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       options: this.state.AzureDevopsProjects,
       onChange: this.onProjectIdChange,
@@ -1076,8 +1097,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../../grafana */ "./grafana.ts");
 /* harmony import */ var _AzureDevopsItem__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
 /* harmony import */ var _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
 
@@ -1117,7 +1137,7 @@ function (_super) {
     _this.loadTeams = function () {
       return new Promise(function (resolve) {
         var az = new _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsInstance"](_this.props.datasource.instanceSettings);
-        az.listTeamsByProject(_this.props.query.projectId || '').then(function (res) {
+        az.projectService.listTeams(_this.props.query.projectId || '').then(function (res) {
           _this.setState({
             Teams: res.map(function (r) {
               return r.asSelectable();
@@ -1173,7 +1193,7 @@ function (_super) {
     }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Team"
-    }, "Team"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+    }, "Team"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       options: this.state.Teams,
       onChange: this.onTeamIdChange,
@@ -1211,8 +1231,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../../grafana */ "./grafana.ts");
 /* harmony import */ var _AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
 /* harmony import */ var _core_AzureDevopsItem__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./../core/AzureDevopsItem */ "./azure_devops/core/AzureDevopsItem.ts");
 
@@ -1300,7 +1319,7 @@ function (_super) {
     return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Projects"
-    }, "Pipeline Name"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["Select"], {
+    }, "Pipeline Name"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       options: this.state.AzureDevopsPipelines,
       onChange: this.onPipelineIdChange,
@@ -1334,13 +1353,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzurePipelinesService", function() { return AzurePipelinesService; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AzurePipelineServiceCtrl", function() { return AzurePipelineServiceCtrl; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _Backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./../Backend */ "./azure_devops/Backend.ts");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! lodash */ "lodash");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
-/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../../grafana */ "./grafana.ts");
+/* harmony import */ var _Backend__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../Backend */ "./azure_devops/Backend.ts");
 /* harmony import */ var _AzurePipeline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./AzurePipeline */ "./azure_devops/pipelines/AzurePipeline.tsx");
 /* harmony import */ var _AzureDevopsService__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./../AzureDevopsService */ "./azure_devops/AzureDevopsService.tsx");
 
@@ -1372,7 +1390,7 @@ function (_super) {
   }
 
   AzurePipelinesService.prototype.getPipelinesByProjectId = function (projectId) {
-    return Object(_Backend__WEBPACK_IMPORTED_MODULE_1__["doBackendRequest"])({
+    return Object(_Backend__WEBPACK_IMPORTED_MODULE_4__["doBackendRequest"])({
       method: 'GET',
       url: this.url + ("/" + projectId + "/_apis/pipelines?api-version=6.0-preview.1")
     }, 2).then(function (response) {
@@ -1390,7 +1408,7 @@ function (_super) {
   };
 
   AzurePipelinesService.prototype.getPipelineRunsByPipelineId = function (projectId, pipelineId) {
-    return Object(_Backend__WEBPACK_IMPORTED_MODULE_1__["doBackendRequest"])({
+    return Object(_Backend__WEBPACK_IMPORTED_MODULE_4__["doBackendRequest"])({
       method: 'GET',
       url: this.url + ("/" + projectId + "/_apis/pipelines/" + pipelineId + "/runs?api-version=6.0-preview.1")
     }, 2).then(function (response) {
@@ -1408,7 +1426,7 @@ function (_super) {
   };
 
   AzurePipelinesService.prototype.getBuildBuilds = function (projectId) {
-    return Object(_Backend__WEBPACK_IMPORTED_MODULE_1__["doBackendRequest"])({
+    return Object(_Backend__WEBPACK_IMPORTED_MODULE_4__["doBackendRequest"])({
       method: 'GET',
       url: this.url + ("/" + projectId + "/_apis/build/builds?api-version=6.0-preview.6")
     }, 2).then(function (response) {
@@ -1426,7 +1444,7 @@ function (_super) {
   };
 
   AzurePipelinesService.prototype.getReleaseDeployments = function (projectId) {
-    return Object(_Backend__WEBPACK_IMPORTED_MODULE_1__["doBackendRequest"])({
+    return Object(_Backend__WEBPACK_IMPORTED_MODULE_4__["doBackendRequest"])({
       method: 'GET',
       url: this.url + ("/" + projectId + "/_apis/release/deployments?api-version=6.0-preview.2")
     }, 2).then(function (response) {
@@ -1469,7 +1487,7 @@ function (_super) {
   }
 
   AzurePipelineServiceCtrl.prototype.render = function () {
-    var query = Object(lodash__WEBPACK_IMPORTED_MODULE_2__["defaults"])(this.props.query, {
+    var query = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["defaults"])(this.props.query, {
       serviceType: 'pipelines',
       queryType: 'build_builds'
     });
@@ -1477,7 +1495,7 @@ function (_super) {
 
     switch (query.queryType) {
       case 'pipelines_runs':
-        detailCtrl = react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_3___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(_AzurePipeline__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsPipelineCtrl"], {
+        detailCtrl = react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_AzurePipeline__WEBPACK_IMPORTED_MODULE_5__["AzureDevopsPipelineCtrl"], {
           onChange: this.props.onChange,
           query: query,
           datasource: this.props.datasource
@@ -1485,10 +1503,10 @@ function (_super) {
         break;
     }
 
-    return react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_3___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement("label", {
+    return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("label", {
       className: "gf-form-label width-12",
       title: "Query Type"
-    }, "Query Type"), react__WEBPACK_IMPORTED_MODULE_3___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_4__["Select"], {
+    }, "Query Type"), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana__WEBPACK_IMPORTED_MODULE_3__["Select"], {
       className: "width-24",
       value: queryTypes.find(function (service) {
         return service.value === query.queryType;
@@ -1500,7 +1518,7 @@ function (_super) {
   };
 
   return AzurePipelineServiceCtrl;
-}(react__WEBPACK_IMPORTED_MODULE_3__["PureComponent"]);
+}(react__WEBPACK_IMPORTED_MODULE_2__["PureComponent"]);
 
 
 
@@ -1633,8 +1651,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./grafana */ "./grafana.ts");
 /* harmony import */ var _azure_devops_AzureDevopsInstance__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./azure_devops/AzureDevopsInstance */ "./azure_devops/AzureDevopsInstance.ts");
 
 
@@ -1726,7 +1743,7 @@ function (_super) {
             projectId = query.replace("Teams(", "").slice(0, -1);
             return [4
             /*yield*/
-            , this.azureDevopsInstance.listTeamsByProject(projectId)];
+            , this.azureDevopsInstance.projectService.listTeams(projectId)];
 
           case 3:
             teams = _a.sent();
@@ -1763,7 +1780,7 @@ function (_super) {
   };
 
   return Datasource;
-}(_grafana_data__WEBPACK_IMPORTED_MODULE_2__["DataSourceApi"]);
+}(_grafana__WEBPACK_IMPORTED_MODULE_2__["DataSourceApi"]);
 
 
 
@@ -2034,6 +2051,35 @@ function (_super) {
 
 /***/ }),
 
+/***/ "./grafana.ts":
+/*!********************!*\
+  !*** ./grafana.ts ***!
+  \********************/
+/*! exports provided: DataSourcePlugin, DataSourceApi, Select, getBackendSrv */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
+/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DataSourcePlugin", function() { return _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DataSourceApi", function() { return _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourceApi"]; });
+
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @grafana/ui */ "@grafana/ui");
+/* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Select", function() { return _grafana_ui__WEBPACK_IMPORTED_MODULE_1__["Select"]; });
+
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @grafana/runtime */ "@grafana/runtime");
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_grafana_runtime__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getBackendSrv", function() { return _grafana_runtime__WEBPACK_IMPORTED_MODULE_2__["getBackendSrv"]; });
+
+
+
+
+
+/***/ }),
+
 /***/ "./module.ts":
 /*!*******************!*\
   !*** ./module.ts ***!
@@ -2044,8 +2090,7 @@ function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "plugin", function() { return plugin; });
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @grafana/data */ "@grafana/data");
-/* harmony import */ var _grafana_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_grafana_data__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _grafana__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grafana */ "./grafana.ts");
 /* harmony import */ var _datasource__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./datasource */ "./datasource.ts");
 /* harmony import */ var _editors_AzureDevopsConfigEditor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editors/AzureDevopsConfigEditor */ "./editors/AzureDevopsConfigEditor.tsx");
 /* harmony import */ var _editors_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./editors/AzureDevopsQueryEditor */ "./editors/AzureDevopsQueryEditor.tsx");
@@ -2055,7 +2100,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var plugin = new _grafana_data__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"](_datasource__WEBPACK_IMPORTED_MODULE_1__["Datasource"]).setConfigEditor(_editors_AzureDevopsConfigEditor__WEBPACK_IMPORTED_MODULE_2__["AzureDevopsConfigEditor"]).setQueryEditor(_editors_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsQueryEditor"]).setAnnotationQueryCtrl(_editors_AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsAnnotationsEditor"]);
+var plugin = new _grafana__WEBPACK_IMPORTED_MODULE_0__["DataSourcePlugin"](_datasource__WEBPACK_IMPORTED_MODULE_1__["Datasource"]).setConfigEditor(_editors_AzureDevopsConfigEditor__WEBPACK_IMPORTED_MODULE_2__["AzureDevopsConfigEditor"]).setQueryEditor(_editors_AzureDevopsQueryEditor__WEBPACK_IMPORTED_MODULE_3__["AzureDevopsQueryEditor"]).setAnnotationQueryCtrl(_editors_AzureDevopsAnnotationsEditor__WEBPACK_IMPORTED_MODULE_4__["AzureDevopsAnnotationsEditor"]);
 
 /***/ }),
 
