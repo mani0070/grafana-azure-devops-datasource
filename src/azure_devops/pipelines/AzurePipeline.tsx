@@ -1,7 +1,6 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { Select } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
+import { Select, SelectableValue } from './../../grafana';
 import { AzureDevopsInstance } from './../AzureDevopsInstance';
 import { AzureDevopsItem } from './../core/AzureDevopsItem';
 

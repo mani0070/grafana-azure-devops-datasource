@@ -1,7 +1,7 @@
-import { doBackendRequest } from './../Backend';
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { Select } from '@grafana/ui';
+import { Select } from './../../grafana';
+import { doBackendRequest } from './../Backend';
 import { AzureDevopsPipeline, AzureDevopsPipelineCtrl } from './AzurePipeline';
 import { AzureBuild } from './AzureBuild';
 import { AzureDevopsService, AZURE_DEVOPS_SERVICE_TYPES } from './../AzureDevopsService';

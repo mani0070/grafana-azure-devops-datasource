@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { QueryEditorProps, DataQuery } from '@grafana/data';
+import { QueryEditorProps, DataQuery } from './../grafana';
 import { Datasource } from './../datasource';
 
 export interface AzureDevopsQuery extends DataQuery {}

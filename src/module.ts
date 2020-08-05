@@ -1,4 +1,4 @@
-import { DataSourcePlugin } from '@grafana/data';
+import { DataSourcePlugin } from './grafana';
 import { Datasource } from './datasource';
 import { AzureDevopsConfigEditor } from './editors/AzureDevopsConfigEditor';
 import { AzureDevopsQueryEditor } from './editors/AzureDevopsQueryEditor';

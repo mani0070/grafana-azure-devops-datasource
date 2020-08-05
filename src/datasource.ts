@@ -1,5 +1,5 @@
 import { flatten, cloneDeep } from 'lodash';
-import { DataSourceApi, DataQuery } from '@grafana/data';
+import { DataSourceApi, DataQuery } from './grafana';
 import { AzureDevopsInstance } from './azure_devops/AzureDevopsInstance';
 import { AzureDevopsProject } from './azure_devops/core/AzureDevopsProject';
 import { AzureDevopsTeam } from './azure_devops/core/AzureDevopsTeam';

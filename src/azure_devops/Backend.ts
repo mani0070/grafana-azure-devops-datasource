@@ -1,4 +1,4 @@
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv } from './../grafana';
 
 export const doBackendRequest = (requestObject: any, maxRetries = 1): Promise<any> => {
   return getBackendSrv()

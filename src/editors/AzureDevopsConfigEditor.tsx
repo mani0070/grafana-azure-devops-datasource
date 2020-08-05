@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { DataSourcePluginOptionsEditorProps, DataSourceJsonData } from '@grafana/data';
+import { DataSourcePluginOptionsEditorProps, DataSourceJsonData } from './../grafana';
 
 interface AzureDevopsOptions extends DataSourceJsonData {
   url?: string;

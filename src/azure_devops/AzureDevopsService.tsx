@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Select } from '@grafana/ui';
+import { Select } from './../grafana';
 import { AzureDevopsItem } from './core/AzureDevopsItem';
 
 export const AZURE_DEVOPS_SERVICE_TYPES = {

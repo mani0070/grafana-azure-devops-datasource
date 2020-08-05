@@ -1,10 +1,9 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
-import { QueryEditorProps } from '@grafana/data';
+import { QueryEditorProps } from './../grafana';
 import { Datasource, AzureDevopsQueryStructure } from './../datasource';
 import { AzureDevopsServiceCtrl, AZURE_DEVOPS_SERVICE_TYPES } from './../azure_devops/AzureDevopsService';
 import { AzureDevopsProjectCtrl } from '../azure_devops/core/AzureDevopsProject';
-
 import { AzureBoardsServiceCtrl } from './../azure_devops/boards/AzureBoardsService';
 import { AzurePipelineServiceCtrl } from './../azure_devops/pipelines/AzurePipelinesService';
 import { AzureReposServiceCtrl } from './../azure_devops/repos/AzureReposService';
