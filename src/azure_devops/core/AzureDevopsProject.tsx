@@ -17,7 +17,7 @@ export class AzureProjectService extends AzureDevopsService {
   constructor(private instanceSettings: any) {
     super('project', 'Project');
     this.url = this.instanceSettings.url;
-  }  
+  }
   listTeams(projectId: string): Promise<any[]> {
     return doBackendRequest(
       {
