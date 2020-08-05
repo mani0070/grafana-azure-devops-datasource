@@ -90,7 +90,11 @@ export class AzureDevopsInstance {
     return new Promise(async (resolve: any, reject: any) => {
       this.listProjects()
         .then(res => {
-          resolve({ message: `Successfully connected to Azure Devops. ${res.length} projects found.`, status: 'success' });
+          if (res && res.length > 0) {
+            resolve({ message: `Successfully connected to Azure Devops. ${res.length} projects found.`, status: 'success' });
+          } else {
+            reject({ message: 'Failed to fetch details from Azure Devops', status: 'error' });
+          }
         })
         .catch(ex => {
           reject({ message: 'Failed to fetch details from Azure Devops', status: 'error' });
