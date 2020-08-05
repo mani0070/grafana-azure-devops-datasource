@@ -1,12 +1,42 @@
 import { defaults } from 'lodash';
 import React, { PureComponent } from 'react';
 import { Select, SelectableValue } from './../../grafana';
+import { doBackendRequest } from './../Backend';
 import { AzureDevopsInstance } from './../AzureDevopsInstance';
 import { AzureDevopsItem } from './AzureDevopsItem';
+import { AzureDevopsTeam } from './AzureDevopsTeam';
+import { AzureDevopsService } from './../AzureDevopsService';
 
 export class AzureDevopsProject extends AzureDevopsItem {
   constructor(options: any) {
     super({ id: options.id, name: options.name });
+  }
+}
+export class AzureProjectService extends AzureDevopsService {
+  url: string;
+  constructor(private instanceSettings: any) {
+    super('project', 'Project');
+    this.url = this.instanceSettings.url;
+  }  
+  listTeams(projectId: string): Promise<any[]> {
+    return doBackendRequest(
+      {
+        method: 'GET',
+        url: this.url + `/_apis/projects/${projectId}/teams?api-version=6.0-preview.3`,
+      },
+      2
+    )
+      .then((response: any) => {
+        if (response && response.data && response.data.value) {
+          return (response.data.value || []).map((result: any) => {
+            return new AzureDevopsTeam(result);
+          });
+        }
+      })
+      .catch((ex: any) => {
+        console.error(ex);
+        return [];
+      });
   }
 }
 export class AzureDevopsProjectCtrl extends PureComponent<any, any> {

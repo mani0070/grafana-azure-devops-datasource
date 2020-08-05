@@ -50,7 +50,7 @@ export class Datasource extends DataSourceApi {
       results = projects.map(p => p.asVariable());
     } else if (query.startsWith('Teams(') && query.endsWith(')')) {
       const projectId = query.replace(`Teams(`, ``).slice(0, -1);
-      const teams: AzureDevopsTeam[] = await this.azureDevopsInstance.listTeamsByProject(projectId);
+      const teams: AzureDevopsTeam[] = await this.azureDevopsInstance.projectService.listTeams(projectId);
       results = teams.map(p => p.asVariable());
     } else if (query.startsWith('Pipelines(') && query.endsWith(')')) {
       const projectId = query.replace(`Pipelines(`, ``).slice(0, -1);

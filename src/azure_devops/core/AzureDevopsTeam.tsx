@@ -14,7 +14,7 @@ export class AzureDevopsTeamCtrl extends PureComponent<any, any> {
   loadTeams = () => {
     return new Promise(resolve => {
       const az: AzureDevopsInstance = new AzureDevopsInstance(this.props.datasource.instanceSettings);
-      az.listTeamsByProject(this.props.query.projectId || '').then((res: AzureDevopsTeam[]) => {
+      az.projectService.listTeams(this.props.query.projectId || '').then((res: AzureDevopsTeam[]) => {
         this.setState({
           Teams: res.map(r => {
             return r.asSelectable();

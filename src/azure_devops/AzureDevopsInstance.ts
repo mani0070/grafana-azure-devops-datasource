@@ -1,18 +1,20 @@
 import { doBackendRequest } from './Backend';
 import { AzureDevopsProject } from './core/AzureDevopsProject';
-import { AzureDevopsTeam } from './core/AzureDevopsTeam';
 import { AzurePipelinesService } from './pipelines/AzurePipelinesService';
 import { AzureBoardsService } from './boards/AzureBoardsService';
+import { AzureProjectService } from './core/AzureDevopsProject';
 
 export class AzureDevopsInstance {
   url: string;
   projects: AzureDevopsProject[] = [];
   pipelineService: AzurePipelinesService;
   boardsService: AzureBoardsService;
+  projectService: AzureProjectService;
   constructor(private instanceSettings: any) {
     this.url = this.instanceSettings.url;
     this.pipelineService = new AzurePipelinesService(this.instanceSettings);
     this.boardsService = new AzureBoardsService(this.instanceSettings);
+    this.projectService = new AzureProjectService(this.instanceSettings);
   }
   query(options: any): Promise<any> {
     const queries: any[] = options.targets.filter((item: any) => {
@@ -32,7 +34,7 @@ export class AzureDevopsInstance {
           promises.push(this.pipelineService.getReleaseDeployments(q.projectId));
           break;
         case 'teams':
-          promises.push(this.listTeamsByProject(q.projectId));
+          promises.push(this.projectService.listTeams(q.projectId));
           break;
         case 'teams_backlogs':
           promises.push(this.boardsService.getBacklogTypesByTeam(q.projectId, q.teamId));
@@ -64,26 +66,6 @@ export class AzureDevopsInstance {
       .catch((ex: any) => {
         console.error(ex);
         return this.projects;
-      });
-  }
-  listTeamsByProject(projectId: string): Promise<any[]> {
-    return doBackendRequest(
-      {
-        method: 'GET',
-        url: this.url + `/_apis/projects/${projectId}/teams?api-version=6.0-preview.3`,
-      },
-      2
-    )
-      .then((response: any) => {
-        if (response && response.data && response.data.value) {
-          return (response.data.value || []).map((result: any) => {
-            return new AzureDevopsTeam(result);
-          });
-        }
-      })
-      .catch((ex: any) => {
-        console.error(ex);
-        return [];
       });
   }
   testConnection(): Promise<any> {
